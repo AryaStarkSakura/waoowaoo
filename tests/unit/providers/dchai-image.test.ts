@@ -95,6 +95,30 @@ describe('dchai image generator', () => {
     expect(result.success).toBe(false)
   })
 
+  it('extracts image URL from OpenRouter message.images field (image_url format)', async () => {
+    const base64Data = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    const dataUrl = `data:image/jpeg;base64,${base64Data}`
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 'gen-openrouter-test',
+        choices: [{
+          message: {
+            role: 'assistant',
+            content: null,
+            images: [{ type: 'image_url', image_url: { url: dataUrl } }],
+          },
+        }],
+      }),
+    })
+
+    const generator = new DcHaiImageGenerator('google/gemini-3.1-flash-image-preview', 'openrouter')
+    const result = await generator.generate({ userId: 'user-1', prompt: 'a cat' })
+
+    expect(result.success).toBe(true)
+    expect(result.imageUrl).toBe(dataUrl)
+  })
+
   it('retries on HTTP error and returns failure after max retries', async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 500, text: async () => 'Server Error' })
 

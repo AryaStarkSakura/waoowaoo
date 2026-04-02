@@ -85,20 +85,77 @@ export class DcHaiImageGenerator extends BaseImageGenerator {
       throw new Error(`DCHAI_IMAGE_FAILED(${response.status}): ${errorText}`)
     }
 
+    type ContentPart =
+      | { type: 'text'; text: string }
+      | { type: 'image_url'; image_url: { url: string } }
+
+    type GeminiInlinePart = {
+      inlineData?: { mimeType: string; data: string }
+      text?: string
+    }
+
+    type OpenRouterImage = { type?: string; image_url?: { url: string }; url?: string } | string
+
     const data = await response.json() as {
       choices?: Array<{
-        message?: { content?: string }
+        message?: {
+          content?: string | ContentPart[] | null
+          parts?: GeminiInlinePart[]
+          images?: OpenRouterImage[]
+        }
       }>
     }
 
-    const messageContent = data.choices?.[0]?.message?.content
-    if (!messageContent) {
-      throw new Error('DCHAI_IMAGE_EMPTY_RESPONSE: no content returned')
+    const message = data.choices?.[0]?.message
+    const rawContent = message?.content
+
+    // 从各种格式的响应中提取图片 URL / base64
+    const imageUrls: string[] = []
+
+    if (typeof rawContent === 'string' && rawContent.trim()) {
+      // DcHai 格式：markdown 字符串包含 ![image](url)
+      imageUrls.push(...parseImageUrlsFromMarkdown(rawContent))
+      if (imageUrls.length === 0 && rawContent.startsWith('data:image/')) {
+        imageUrls.push(rawContent.trim())
+      }
+    } else if (Array.isArray(rawContent)) {
+      // OpenRouter multimodal 格式：content 是 parts 数组
+      for (const part of rawContent as ContentPart[]) {
+        if (part.type === 'image_url' && part.image_url?.url) {
+          imageUrls.push(part.image_url.url)
+        } else if (part.type === 'text' && part.text) {
+          imageUrls.push(...parseImageUrlsFromMarkdown(part.text))
+        }
+      }
     }
 
-    const imageUrls = parseImageUrlsFromMarkdown(messageContent)
+    // Gemini 原生格式：content 为 null，图像在 message.parts[].inlineData
+    if (imageUrls.length === 0 && Array.isArray(message?.parts)) {
+      for (const part of message.parts as GeminiInlinePart[]) {
+        if (part.inlineData?.data && part.inlineData.mimeType.startsWith('image/')) {
+          imageUrls.push(`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`)
+        } else if (part.text) {
+          imageUrls.push(...parseImageUrlsFromMarkdown(part.text))
+        }
+      }
+    }
+
+    // OpenRouter 专属格式：content 为 null，图像在 message.images[]
+    // 结构：[{type:"image_url", image_url:{url:"data:image/jpeg;base64,..."}}]
+    if (imageUrls.length === 0 && Array.isArray(message?.images)) {
+      for (const img of message.images as OpenRouterImage[]) {
+        if (typeof img === 'string') {
+          if (img.trim()) imageUrls.push(img.trim())
+        } else {
+          const url = img?.image_url?.url || img?.url
+          if (typeof url === 'string' && url.trim()) imageUrls.push(url.trim())
+        }
+      }
+    }
+
     if (imageUrls.length === 0) {
-      throw new Error('DCHAI_IMAGE_NO_URLS: no image URLs found in response')
+      const preview = JSON.stringify({ content: rawContent, keys: message ? Object.keys(message) : [] }).slice(0, 500)
+      throw new Error(`DCHAI_IMAGE_NO_URLS: no image URLs found in response. preview=${preview}`)
     }
 
     return {

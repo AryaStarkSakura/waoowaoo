@@ -66,7 +66,9 @@ export function createImageGenerator(provider: string, modelId?: string): ImageG
         case 'openai-compatible':
             return new OpenAICompatibleImageGenerator(actualModelId, provider)
         case 'openrouter':
-            return new OpenAICompatibleImageGenerator(actualModelId, provider)
+            // OpenRouter 的图像模型（如 gemini-3.1-flash-image-preview）通过 chat completions 返回图像，
+            // 不走 OpenAI /images/generate 端点，需使用 DcHaiImageGenerator（chat completions + Markdown 解析）
+            return new DcHaiImageGenerator(actualModelId || '', provider)
         case 'dchai':
             return new DcHaiImageGenerator(actualModelId || 'Nano_Banana_Pro_2K_0', provider)
         case 'bailian':
