@@ -6,6 +6,7 @@ import { normalizeToBase64ForGeneration } from '@/lib/media/outbound-image'
 import { extractStorageKey, getSignedUrl, toFetchableUrl, uploadObject } from '@/lib/storage'
 import { resolveStorageKeyFromMediaValue } from '@/lib/media/service'
 import { synthesizeWithBailianTTS } from '@/lib/providers/bailian'
+import { synthesizeWithMinimaxTTS } from '@/lib/providers/minimax/tts'
 import {
   parseSpeakerVoiceMap,
   resolveVoiceBindingForProvider,
@@ -256,6 +257,23 @@ export async function generateVoiceLine(params: {
       throw new Error(normalizeBailianVoiceGenerationError(result.error))
     }
 
+    const audioData = result.audioData
+    generated = {
+      audioData,
+      audioDuration: result.audioDuration ?? getWavDurationFromBuffer(audioData),
+    }
+  } else if (providerKey === 'minimax') {
+    if (!voiceBinding || voiceBinding.provider !== 'minimax') {
+      throw new Error('请先为该发言人绑定 MiniMax 音色')
+    }
+    const { apiKey } = await getProviderConfig(params.userId, audioSelection.provider)
+    const result = await synthesizeWithMinimaxTTS(
+      { text, voiceId: voiceBinding.voiceId, modelId: audioSelection.modelId },
+      apiKey,
+    )
+    if (!result.success || !result.audioData) {
+      throw new Error(result.error || 'MINIMAX_AUDIO_GENERATION_FAILED')
+    }
     const audioData = result.audioData
     generated = {
       audioData,

@@ -91,6 +91,11 @@ type PresetModel = Omit<CustomModel, 'enabled' | 'modelKey' | 'price'>
 // 预设模型
 export const PRESET_MODELS: PresetModel[] = [
     // 文本模型
+    // OpenRouter 图像模型
+    { modelId: 'openai/dall-e-3', name: 'DALL-E 3', type: 'image', provider: 'openrouter' },
+    { modelId: 'openai/gpt-image-1', name: 'GPT Image 1', type: 'image', provider: 'openrouter' },
+    { modelId: 'google/gemini-3.1-flash-image-preview', name: 'Gemini 3.1 Flash Image', type: 'image', provider: 'openrouter' },
+    // OpenRouter 文本模型
     { modelId: 'google/gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro', type: 'llm', provider: 'openrouter' },
     { modelId: 'google/gemini-3-pro-preview', name: 'Gemini 3 Pro', type: 'llm', provider: 'openrouter' },
     { modelId: 'google/gemini-3-flash-preview', name: 'Gemini 3 Flash', type: 'llm', provider: 'openrouter' },
@@ -166,6 +171,12 @@ export const PRESET_MODELS: PresetModel[] = [
     { modelId: 'fal-ai/kling-video/lipsync/audio-to-video', name: 'Kling Lip Sync', type: 'lipsync', provider: 'fal' },
     { modelId: 'vidu-lipsync', name: 'Vidu Lip Sync', type: 'lipsync', provider: 'vidu' },
     { modelId: 'videoretalk', name: 'VideoRetalk Lip Sync', type: 'lipsync', provider: 'bailian' },
+
+    // MiniMax 音频模型
+    { modelId: 'speech-01-turbo', name: 'MiniMax Speech 01 Turbo', type: 'audio', provider: 'minimax' },
+    { modelId: 'speech-01-hd', name: 'MiniMax Speech 01 HD', type: 'audio', provider: 'minimax' },
+    { modelId: 'speech-02-hd', name: 'MiniMax Speech 02 HD', type: 'audio', provider: 'minimax' },
+    { modelId: 'speech-02-turbo', name: 'MiniMax Speech 02 Turbo', type: 'audio', provider: 'minimax' },
 
     // MiniMax 视频模型
     { modelId: 'minimax-hailuo-2.3', name: 'Hailuo 2.3', type: 'video', provider: 'minimax' },

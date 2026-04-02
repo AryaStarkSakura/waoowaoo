@@ -29,6 +29,7 @@ import {
     SiliconFlowImageGenerator,
     SiliconFlowVideoGenerator,
 } from './official'
+import { MinimaxTTSGenerator } from './audio'
 
 /**
  * 根据 provider 创建图片生成器
@@ -62,6 +63,8 @@ export function createImageGenerator(provider: string, modelId?: string): ImageG
         case 'gemini-compatible':
             return new GeminiCompatibleImageGenerator(actualModelId, provider)
         case 'openai-compatible':
+            return new OpenAICompatibleImageGenerator(actualModelId, provider)
+        case 'openrouter':
             return new OpenAICompatibleImageGenerator(actualModelId, provider)
         case 'bailian':
             return new BailianImageGenerator()
@@ -111,6 +114,8 @@ export function createAudioGenerator(provider: string): AudioGenerator {
             return new BailianAudioGenerator()
         case 'siliconflow':
             return new SiliconFlowAudioGenerator()
+        case 'minimax':
+            return new MinimaxTTSGenerator()
         default:
             throw new Error(`Unknown audio generator provider: ${provider}`)
     }
