@@ -91,6 +91,13 @@ type PresetModel = Omit<CustomModel, 'enabled' | 'modelKey' | 'price'>
 // 预设模型
 export const PRESET_MODELS: PresetModel[] = [
     // 文本模型
+    // DcHai 图像模型
+    { modelId: 'Nano_Banana_Pro_2K_0', name: 'Nano Banana Pro 2K', type: 'image', provider: 'dchai' },
+    { modelId: 'Nano_Banana_Pro_2K_1', name: 'Nano Banana Pro 2K (v1)', type: 'image', provider: 'dchai' },
+    { modelId: 'Nano_Banana_Pro_2K_5', name: 'Nano Banana Pro 2K (v5)', type: 'image', provider: 'dchai' },
+    { modelId: 'gemini-3-pro-image-preview-max-2K', name: 'Gemini 3 Pro Image 2K', type: 'image', provider: 'dchai' },
+    { modelId: 'gemini-3-pro-image-preview-max-4K', name: 'Gemini 3 Pro Image 4K', type: 'image', provider: 'dchai' },
+
     // OpenRouter 图像模型
     { modelId: 'openai/dall-e-3', name: 'DALL-E 3', type: 'image', provider: 'openrouter' },
     { modelId: 'openai/gpt-image-1', name: 'GPT Image 1', type: 'image', provider: 'openrouter' },
@@ -216,6 +223,7 @@ export const PRESET_PROVIDERS: Omit<Provider, 'apiKey' | 'hasApiKey'>[] = [
     { id: 'minimax', name: 'MiniMax Hailuo', baseUrl: 'https://api.minimaxi.com/v1' },
     { id: 'vidu', name: 'Vidu' },
     { id: 'fal', name: 'FAL' },
+    { id: 'dchai', name: 'DcHai', baseUrl: 'https://sg2.dchai.cn/v1' },
 ]
 
 const ZH_PROVIDER_NAME_MAP: Record<string, string> = {

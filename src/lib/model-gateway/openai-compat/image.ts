@@ -29,6 +29,7 @@ const OPENAI_IMAGE_OPTION_KEYS = new Set([
   'quality',
   'responseFormat',
   'outputFormat',
+  'aspectRatio',  // 部分上游 API 不支持，忽略处理，不传给 OpenAI 兼容接口
 ])
 
 function assertAllowedOptions(options: Record<string, unknown>) {

@@ -5,12 +5,13 @@ Input text:
 {CONTENT}
 
 Core rules:
-1. Keep episode lengths as balanced as possible.
-2. Prefer natural breakpoints (chapter boundary, scene shift, time jump).
-3. Keep chronology and full coverage (no overlap, no missing text).
-4. Provide reliable startMarker and endMarker copied from source text.
-5. Return JSON only.
-6. ⚠️ JSON SAFETY: All quotation marks in text (""''「」 etc.) MUST be converted to corner brackets「」in JSON string values. NEVER use raw ASCII double quotes " inside string values.
+1. **Episode count — natural markers take precedence**: First scan for explicit scene numbering (e.g. `X-Y【scene】` or「第X集」or "Chapter X"). If found, set N = the maximum X value. Only fall back to the word-count formula (total ÷ 650, rounded) when no such markers exist.
+2. Keep episode lengths as balanced as possible (target ± 20%).
+3. Prefer natural breakpoints (chapter boundary, scene shift, time jump).
+4. Keep chronology and full coverage (no overlap, no missing text).
+5. Provide reliable startMarker and endMarker copied exactly from source text.
+6. Return JSON only.
+7. ⚠️ JSON SAFETY: All quotation marks in text (""''「」 etc.) MUST be converted to corner brackets「」in JSON string values. NEVER use raw ASCII double quotes " inside string values.
 
 Output format:
 {

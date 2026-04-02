@@ -391,6 +391,41 @@ function tryApproximateNormalizedMarkerMatch(
   }
 }
 
+/**
+ * L4 fallback: 当完整 marker 三级均匹配失败时，尝试去掉头部或尾部少量字符后重新匹配。
+ * 解决 AI 轻量级模型在生成 marker 时将周边词语错误拼入头尾导致的幻觉问题。
+ */
+function tryTrimmedMarkerMatch(
+  normalized: NormalizedContent,
+  normalizedMarker: string,
+  fromIndex: number,
+): TextMarkerMatch | null {
+  const MIN_REMAINING = 10
+  const MAX_STRIP = Math.min(6, Math.floor(normalizedMarker.length * 0.3))
+
+  // 尝试去头（AI 在 marker 前面多加了错误字符）
+  for (let strip = 1; strip <= MAX_STRIP; strip++) {
+    const suffix = normalizedMarker.slice(strip)
+    if (suffix.length < MIN_REMAINING) break
+    const l2 = tryExactNormalizedMarkerMatch(normalized, suffix, fromIndex)
+    if (l2) return { ...l2, level: 'L3', confidence: 0.88 }
+    const l3 = tryApproximateNormalizedMarkerMatch(normalized, suffix, fromIndex)
+    if (l3) return { ...l3, level: 'L3', confidence: 0.85 }
+  }
+
+  // 尝试去尾（AI 在 marker 后面多加了错误字符）
+  for (let strip = 1; strip <= MAX_STRIP; strip++) {
+    const prefix = normalizedMarker.slice(0, normalizedMarker.length - strip)
+    if (prefix.length < MIN_REMAINING) break
+    const l2 = tryExactNormalizedMarkerMatch(normalized, prefix, fromIndex)
+    if (l2) return { ...l2, level: 'L3', confidence: 0.88 }
+    const l3 = tryApproximateNormalizedMarkerMatch(normalized, prefix, fromIndex)
+    if (l3) return { ...l3, level: 'L3', confidence: 0.85 }
+  }
+
+  return null
+}
+
 export function createTextMarkerMatcher(content: string): TextMarkerMatcher {
   const normalized = buildNormalizedContent(content)
 
@@ -410,6 +445,9 @@ export function createTextMarkerMatcher(content: string): TextMarkerMatcher {
 
       const l3 = tryApproximateNormalizedMarkerMatch(normalized, normalizedMarker, fromIndex)
       if (l3) return l3
+
+      const l4 = tryTrimmedMarkerMatch(normalized, normalizedMarker, fromIndex)
+      if (l4) return l4
 
       return null
     },

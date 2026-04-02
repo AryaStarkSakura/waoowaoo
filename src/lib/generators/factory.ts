@@ -15,6 +15,7 @@ import {
     GoogleGeminiBatchImageGenerator,
     GeminiCompatibleImageGenerator,
     OpenAICompatibleImageGenerator,
+    DcHaiImageGenerator,
 } from './image'
 import { GoogleVeoVideoGenerator } from './video/google'
 import { OpenAICompatibleVideoGenerator } from './video'
@@ -66,6 +67,8 @@ export function createImageGenerator(provider: string, modelId?: string): ImageG
             return new OpenAICompatibleImageGenerator(actualModelId, provider)
         case 'openrouter':
             return new OpenAICompatibleImageGenerator(actualModelId, provider)
+        case 'dchai':
+            return new DcHaiImageGenerator(actualModelId || 'Nano_Banana_Pro_2K_0', provider)
         case 'bailian':
             return new BailianImageGenerator()
         case 'siliconflow':
